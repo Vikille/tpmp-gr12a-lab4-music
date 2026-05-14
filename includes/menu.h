@@ -6,6 +6,7 @@ class Menu {
 public:
     Menu(Database& db, AuthManager& auth);
     void run();
+    void period_report();
 private:
     Database& db_;
     AuthManager& auth_;
@@ -18,7 +19,7 @@ private:
     void add_arrival();
     void add_sale();
     void report_by_author();
-    void period_report();
+    
     void admin_add_disc();
     void admin_upload_cover();
 };
