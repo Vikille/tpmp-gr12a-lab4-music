@@ -12,12 +12,10 @@ if ! command -v lcov &> /dev/null; then
 fi
 
 # Компиляция тестов с флагами покрытия
-g++ -std=c++17 --coverage \
-    -I includes -I src \
+g++ -std=c++17 -I includes \
     test/test_utils.cpp test/test_auth.cpp test/test_database.cpp test/test_menu.cpp \
     src/utils.cpp src/auth.cpp src/database.cpp src/menu.cpp \
-    -lgtest -lgtest_main -lsqlite3 \
-    -o test_runner
+    -lgtest -lgtest_main -lsqlite3 -o test_runner
 
 # Запуск тестов
 ./test_runner
