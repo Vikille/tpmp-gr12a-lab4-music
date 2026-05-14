@@ -12,10 +12,8 @@
 
 TEST(MenuTest, ViewDiscsDoesNotCrash) {
     Database db(":memory:");
-    db.execute("INSERT INTO cd_discs VALUES 
-('CD-TEST','2025-01-01','TestLabel',9.99,NULL)");
-    db.execute("INSERT INTO operations VALUES 
-(NULL,'2025-01-01','I','CD-TEST',10)");
+    db.execute("INSERT INTO cd_discs VALUES ('CD-TEST','2025-01-01','TestLabel',9.99,NULL)");
+    db.execute("INSERT INTO operations VALUES (NULL,'2025-01-01','I','CD-TEST',10)");
 
     AuthManager auth(db);
     Menu menu(db, auth);
@@ -27,8 +25,7 @@ TEST(MenuTest, ViewDiscsDoesNotCrash) {
 
 TEST(MenuTest, AddArrivalIncreasesStock) {
     Database db(":memory:");
-    db.execute("INSERT INTO cd_discs VALUES 
-('CD-ARR','2025-01-01','Test',10.0,NULL)");
+    db.execute("INSERT INTO cd_discs VALUES ('CD-ARR','2025-01-01','Test',10.0,NULL)");
     AuthManager auth(db);
     Menu menu(db, auth);
     // Симулируем ввод
@@ -37,8 +34,7 @@ TEST(MenuTest, AddArrivalIncreasesStock) {
     menu.add_arrival();
     // Проверим, что операция добавилась
     int cnt = 0;
-    db.execute_callback("SELECT COUNT(*) FROM operations WHERE 
-cd_code='CD-ARR' AND operation_type='I'",
+    db.execute_callback("SELECT COUNT(*) FROM operations WHERE cd_code='CD-ARR' AND operation_type='I'",
         [](void* data, int, char** vals, char**) -> int {
             *static_cast<int*>(data) = std::stoi(vals[0]);
             return 0;
