@@ -10,9 +10,9 @@ public:
     bool login();
     Role get_role() const { return role_; }
     std::string get_user() const { return username_; }
+    bool check_credentials(const std::string& user, const std::string& password);
 private:
     Database& db_;
     Role role_ = Role::None;
     std::string username_;
-    bool check_credentials(const std::string& user, const std::string& password);
 };
