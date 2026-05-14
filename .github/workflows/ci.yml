@@ -1,4 +1,4 @@
-name: CI without CMake
+name: CI without external test framework
 on:
   push:
     branches: [ main, master ]
@@ -15,24 +15,21 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++ libsqlite3-dev lcov libgtest-dev
-        cd /usr/src/gtest
-        sudo cmake .
-        sudo make
-        sudo cp lib/*.a /usr/lib
+        sudo apt-get install -y g++ libsqlite3-dev lcov
 
-    - name: Build application (main)
+    - name: Build application
       run: |
+        mkdir -p bin
         g++ -std=c++17 -I includes src/main.cpp src/database.cpp src/auth.cpp src/menu.cpp src/utils.cpp -lsqlite3 -o bin/music_store
 
-    - name: Build tests with coverage flags
+    - name: Build test runner with coverage
       run: |
         g++ -std=c++17 \
           --coverage \
           -I includes -I src \
-          test/test_utils.cpp test/test_auth.cpp test/test_database.cpp test/test_menu.cpp \
+          test/test_runner.cpp \
           src/utils.cpp src/auth.cpp src/database.cpp src/menu.cpp \
-          -lgtest -lgtest_main -lsqlite3 \
+          -lsqlite3 \
           -o test_runner
 
     - name: Run tests
@@ -41,16 +38,13 @@ jobs:
     - name: Generate coverage report
       run: |
         lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' '*/gtest/*' '*/test/*' --output-file coverage_filtered.info
+        lcov --remove coverage.info '/usr/*' '*/test/*' --output-file coverage_filtered.info
         lcov --list coverage_filtered.info
+        mkdir -p coverage_report
+        genhtml coverage_filtered.info --output-directory coverage_report
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
       with:
-        files: ./coverage_filtered.info
-        flags: unittests
-        name: music-store-coverage
-        fail_ci_if_error: true
-        verbose: true
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        name: coverage-report
+        path: coverage_report/
