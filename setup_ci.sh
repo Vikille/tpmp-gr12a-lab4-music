@@ -75,10 +75,8 @@ protected:
 
     void SetUp() override {
         db = new Database(":memory:");
-        db->execute("INSERT INTO users (username, password_hash, role) 
-VALUES ('user1', 'user1', 'customer')");
-        db->execute("INSERT INTO users (username, password_hash, role) 
-VALUES ('admin1', 'admin1', 'admin')");
+        db->execute("INSERT INTO users (username, password_hash, role) VALUES ('user1', 'user1', 'customer')");
+        db->execute("INSERT INTO users (username, password_hash, role) VALUES ('admin1', 'admin1', 'admin')");
         auth = new AuthManager(*db);
     }
 
@@ -151,31 +149,20 @@ TEST_F(DatabaseTest, UsersTableExists) {
 }
 
 TEST_F(DatabaseTest, InsertDisc) {
-    bool ok = db->execute("INSERT INTO cd_discs (cd_code, 
-manufacture_date, producer_company, price) VALUES 
-('CD-99','2025-01-01','TestLabel',9.99)");
-    EXPECT_TRUE(ok);
-    EXPECT_EQ(countRows("cd_discs"), 1);
+    bool ok = db->execute("INSERT INTO cd_discs (cd_code, manufacture_date, producer_company, price) VALUES ('CD-99','2025-01-01','TestLabel',9.99)"); EXPECT_TRUE(ok); EXPECT_EQ(countRows("cd_discs"), 1);
 }
 
 TEST_F(DatabaseTest, SaleTriggerPreventsOverSelling) {
-    db->execute("INSERT INTO cd_discs VALUES 
-('CD-TRIG','2025-01-01','Test',10.0,NULL)");
-    db->execute("INSERT INTO operations (operation_date, operation_type, 
-cd_code, quantity) VALUES ('2025-01-01','I','CD-TRIG',5)");
-    bool sale_ok = db->execute("INSERT INTO operations (operation_date, 
-operation_type, cd_code, quantity) VALUES 
-('2025-01-02','S','CD-TRIG',10)");
+    db->execute("INSERT INTO cd_discs VALUES ('CD-TRIG','2025-01-01','Test',10.0,NULL)");
+    db->execute("INSERT INTO operations (operation_date, operation_type, cd_code, quantity) VALUES ('2025-01-01','I','CD-TRIG',5)");
+    bool sale_ok = db->execute("INSERT INTO operations (operation_date, operation_type, cd_code, quantity) VALUES ('2025-01-02','S','CD-TRIG',10)");
     EXPECT_FALSE(sale_ok);
 }
 
 TEST_F(DatabaseTest, ValidSaleSucceeds) {
-    db->execute("INSERT INTO cd_discs VALUES 
-('CD-OK','2025-01-01','Test',10.0,NULL)");
-    db->execute("INSERT INTO operations (operation_date, operation_type, 
-cd_code, quantity) VALUES ('2025-01-01','I','CD-OK',10)");
-    bool sale_ok = db->execute("INSERT INTO operations (operation_date, 
-operation_type, cd_code, quantity) VALUES ('2025-01-02','S','CD-OK',3)");
+    db->execute("INSERT INTO cd_discs VALUES ('CD-OK','2025-01-01','Test',10.0,NULL)");
+    db->execute("INSERT INTO operations (operation_date, operation_type, cd_code, quantity) VALUES ('2025-01-01','I','CD-OK',10)");
+    bool sale_ok = db->execute("INSERT INTO operations (operation_date, operation_type, cd_code, quantity) VALUES ('2025-01-02','S','CD-OK',3)");
     EXPECT_TRUE(sale_ok);
 }
 EOF
@@ -196,10 +183,8 @@ cat > test/test_menu.cpp << 'EOF'
 
 TEST(MenuTest, ViewDiscsDoesNotCrash) {
     Database db(":memory:");
-    db.execute("INSERT INTO cd_discs VALUES 
-('CD-TEST','2025-01-01','TestLabel',9.99,NULL)");
-    db.execute("INSERT INTO operations VALUES 
-(NULL,'2025-01-01','I','CD-TEST',10)");
+    db.execute("INSERT INTO cd_discs VALUES ('CD-TEST','2025-01-01','TestLabel',9.99,NULL)");
+    db.execute("INSERT INTO operations VALUES (NULL,'2025-01-01','I','CD-TEST',10)");
 
     AuthManager auth(db);
     Menu menu(db, auth);
@@ -211,8 +196,7 @@ TEST(MenuTest, ViewDiscsDoesNotCrash) {
 
 TEST(MenuTest, AddArrivalIncreasesStock) {
     Database db(":memory:");
-    db.execute("INSERT INTO cd_discs VALUES 
-('CD-ARR','2025-01-01','Test',10.0,NULL)");
+    db.execute("INSERT INTO cd_discs VALUES ('CD-ARR','2025-01-01','Test',10.0,NULL)");
     AuthManager auth(db);
     Menu menu(db, auth);
     // Симулируем ввод
@@ -221,13 +205,7 @@ TEST(MenuTest, AddArrivalIncreasesStock) {
     menu.add_arrival();
     // Проверим, что операция добавилась
     int cnt = 0;
-    db.execute_callback("SELECT COUNT(*) FROM operations WHERE 
-cd_code='CD-ARR' AND operation_type='I'",
-        [](void* data, int, char** vals, char**) -> int {
-            *static_cast<int*>(data) = std::stoi(vals[0]);
-            return 0;
-        }, &cnt);
-    EXPECT_EQ(cnt, 1);
+    db.execute_callback("SELECT COUNT(*) FROM operations WHERE cd_code='CD-ARR' AND operation_type='I'", [](void* data, int, char** vals, char**) -> int {*static_cast<int*>(data) = std::stoi(vals[0]); return 0;}, &cnt); EXPECT_EQ(cnt, 1);
 }
 EOF
 
