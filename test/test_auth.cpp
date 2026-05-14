@@ -15,8 +15,8 @@ protected:
 
     void SetUp() override {
         db = new Database(":memory:");
-        db->execute("INSERT INTO users (username, password_hash, role) VALUES ('user1', 'user1', 'customer')");
-        db->execute("INSERT INTO users (username, password_hash, role) VALUES ('admin1', 'admin1', 'admin')");
+        db->execute(R"(INSERT INTO users (username, password_hash, role) VALUES ('user1', 'user1', 'customer'))");
+        db->execute(R"(INSERT INTO users (username, password_hash, role) VALUES ('admin1', 'admin1', 'admin'))");
         auth = new AuthManager(*db);
     }
 
@@ -25,7 +25,7 @@ protected:
         delete db;
     }
 
-    void simulate_login(const std::string& user, const std::string& pass, 
+    void simulate_login(const std::string& user, const std::string& pass,
                         bool expected, Role expected_role) {
         bool result = auth->check_credentials(user, pass);
         EXPECT_EQ(result, expected);
