@@ -10,10 +10,8 @@ protected:
 
     void SetUp() override {
         db = new Database(":memory:");
-        db->execute("INSERT INTO users (username, password_hash, role) 
-VALUES ('user1', 'user1', 'customer')");
-        db->execute("INSERT INTO users (username, password_hash, role) 
-VALUES ('admin1', 'admin1', 'admin')");
+        db->execute("INSERT INTO users (username, password_hash, role) VALUES ('user1', 'user1', 'customer')");
+        db->execute("INSERT INTO users (username, password_hash, role) VALUES ('admin1', 'admin1', 'admin')");
         auth = new AuthManager(*db);
     }
 
