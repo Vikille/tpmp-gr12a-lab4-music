@@ -7,9 +7,6 @@ public:
     Menu(Database& db, AuthManager& auth);
     void run();
     void period_report();
-private:
-    Database& db_;
-    AuthManager& auth_;
     void customer_menu();
     void manager_menu();
     void admin_menu();
@@ -19,7 +16,10 @@ private:
     void add_arrival();
     void add_sale();
     void report_by_author();
-    
     void admin_add_disc();
     void admin_upload_cover();
+private:
+    Database& db_;
+    AuthManager& auth_;
+    
 };
