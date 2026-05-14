@@ -1,0 +1,54 @@
+name: CI with coverage
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-test-coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++ libsqlite3-dev lcov libgtest-dev
+        cd /usr/src/gtest
+        sudo cmake .
+        sudo make
+        sudo cp lib/*.a /usr/lib
+
+    - name: Build application
+      run: |
+        mkdir -p bin
+        g++ -std=c++17 -I includes src/main.cpp src/database.cpp src/auth.cpp src/menu.cpp src/utils.cpp -lsqlite3 -o bin/music_store
+
+    - name: Build tests with coverage flags
+      run: |
+        g++ -std=c++17 \
+          --coverage \
+          -I includes -I src \
+          test/test_utils.cpp test/test_auth.cpp test/test_database.cpp test/test_menu.cpp \
+          src/utils.cpp src/auth.cpp src/database.cpp src/menu.cpp \
+          -lgtest -lgtest_main -lsqlite3 \
+          -o test_runner
+
+    - name: Run tests
+      run: ./test_runner
+
+    - name: Generate coverage report
+      run: |
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' '*/gtest/*' '*/test/*' --output-file coverage_filtered.info
+        lcov --list coverage_filtered.info
+        mkdir -p coverage_report
+        genhtml coverage_filtered.info --output-directory coverage_report
+
+    - name: Upload coverage report as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage_report/
