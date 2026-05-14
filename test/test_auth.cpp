@@ -14,6 +14,8 @@ protected:
     AuthManager* auth;
 
     void SetUp() override {
+        db->execute("DELETE FROM operations");
+        db->execute("DELETE FROM cd_discs");
         db = new Database(":memory:");
         db->execute(R"(INSERT INTO users (username, password_hash, role) VALUES ('user1', 'user1', 'customer'))");
         db->execute(R"(INSERT INTO users (username, password_hash, role) VALUES ('admin1', 'admin1', 'admin'))");
