@@ -8,6 +8,8 @@ protected:
     Database* db;
 
     void SetUp() override {
+        db->execute("DELETE FROM operations");
+        db->execute("DELETE FROM cd_discs");
         db = new Database(":memory:");
     }
 
