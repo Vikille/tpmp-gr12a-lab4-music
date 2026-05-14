@@ -1,7 +1,12 @@
-#include "auth.h"
-#include "database.h"
 #include <gtest/gtest.h>
 #include <sqlite3.h>
+#include <string>
+
+#define private public
+#include "auth.h"
+#undef private
+
+#include "database.h"
 
 class AuthTest : public ::testing::Test {
 protected:
@@ -21,7 +26,7 @@ protected:
     }
 
     void simulate_login(const std::string& user, const std::string& pass, 
-bool expected, Role expected_role) {
+                        bool expected, Role expected_role) {
         bool result = auth->check_credentials(user, pass);
         EXPECT_EQ(result, expected);
         if(result) {
