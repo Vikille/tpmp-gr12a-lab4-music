@@ -1,4 +1,4 @@
-name: CI with coverage
+name: CI without CMake
 on:
   push:
     branches: [ main, master ]
@@ -21,9 +21,8 @@ jobs:
         sudo make
         sudo cp lib/*.a /usr/lib
 
-    - name: Build application
+    - name: Build application (main)
       run: |
-        mkdir -p bin
         g++ -std=c++17 -I includes src/main.cpp src/database.cpp src/auth.cpp src/menu.cpp src/utils.cpp -lsqlite3 -o bin/music_store
 
     - name: Build tests with coverage flags
@@ -44,11 +43,14 @@ jobs:
         lcov --capture --directory . --output-file coverage.info
         lcov --remove coverage.info '/usr/*' '*/gtest/*' '*/test/*' --output-file coverage_filtered.info
         lcov --list coverage_filtered.info
-        mkdir -p coverage_report
-        genhtml coverage_filtered.info --output-directory coverage_report
 
-    - name: Upload coverage report as artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
       with:
-        name: coverage-report
-        path: coverage_report/
+        files: ./coverage_filtered.info
+        flags: unittests
+        name: music-store-coverage
+        fail_ci_if_error: true
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
