@@ -4,7 +4,6 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
-// Для доступа к приватным методам Menu
 #define private public
 #include "menu.h"
 #undef private
@@ -28,18 +27,41 @@ TEST(MenuTest, AddArrivalIncreasesStock) {
     AuthManager auth(db);
     Menu menu(db, auth);
 
-    // Сохраняем старый буфер cin
     auto old_buf = std::cin.rdbuf();
     std::istringstream fake_input("CD-ARR\n5\n");
     std::cin.rdbuf(fake_input.rdbuf());
 
     menu.add_arrival();
 
-    // Восстанавливаем буфер
     std::cin.rdbuf(old_buf);
 
     int cnt = 0;
     db.execute_callback("SELECT COUNT(*) FROM operations WHERE cd_code='CD-ARR' AND operation_type='I'",
+        [](void* data, int, char** vals, char**) -> int {
+            *static_cast<int*>(data) = std::stoi(vals[0]);
+            return 0;
+        }, &cnt);
+    EXPECT_EQ(cnt, 1);
+}
+
+TEST(MenuTest, PeriodReportPopulatesStats) {
+    Database db(":memory:");
+    db.execute(R"(INSERT INTO cd_discs VALUES ('CD-PER','2025-01-01','Test',10.0,NULL))");
+    db.execute(R"(INSERT INTO operations VALUES (NULL,'2025-03-01','I','CD-PER',10))");
+
+    AuthManager auth(db);
+    Menu menu(db, auth);
+
+    auto old_buf = std::cin.rdbuf();
+    std::istringstream fake_input("2025-03-01\n2025-03-02\n");
+    std::cin.rdbuf(fake_input.rdbuf());
+
+    menu.period_report();
+
+    std::cin.rdbuf(old_buf);
+
+    int cnt = 0;
+    db.execute_callback("SELECT COUNT(*) FROM cd_period_stats",
         [](void* data, int, char** vals, char**) -> int {
             *static_cast<int*>(data) = std::stoi(vals[0]);
             return 0;
