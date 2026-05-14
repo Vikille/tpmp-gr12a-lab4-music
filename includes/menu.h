@@ -18,6 +18,7 @@ private:
     void add_arrival();
     void add_sale();
     void report_by_author();
+    void period_report();
     void admin_add_disc();
     void admin_upload_cover();
 };
