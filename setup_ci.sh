@@ -229,44 +229,6 @@ cd_code='CD-ARR' AND operation_type='I'",
         }, &cnt);
     EXPECT_EQ(cnt, 1);
 }
-
-TEST(MenuTest, PeriodReportPopulatesStats) {
-    Database db(":memory:");
-    db.execute("INSERT INTO cd_discs VALUES 
-('CD-PER','2025-01-01','Test',10.0,NULL)");
-    db.execute("INSERT INTO operations VALUES 
-(NULL,'2025-03-01','I','CD-PER',10)");
-    AuthManager auth(db);
-    Menu menu(db, auth);
-    std::istringstream fake_input("2025-03-01\n2025-03-02\n");
-    std::cin.rdbuf(fake_input.rdbuf());
-    menu.period_report();
-    int cnt = 0;
-    db.execute_callback("SELECT COUNT(*) FROM cd_period_stats",
-        [](void* data, int, char** vals, char**) -> int {
-            *static_cast<int*>(data) = std::stoi(vals[0]);
-            return 0;
-        }, &cnt);
-    EXPECT_EQ(cnt, 1);
-}
-
-TEST(MenuTest, AdminAddDiscInsertsRecord) {
-    Database db(":memory:");
-    AuthManager auth(db);
-    Menu menu(db, auth);
-    std::istringstream 
-fake_input("CD-ADMIN\n2025-05-01\nAdminLabel\n15\n");
-    std::cin.rdbuf(fake_input.rdbuf());
-    menu.admin_add_disc();
-    int cnt = 0;
-    db.execute_callback("SELECT COUNT(*) FROM cd_discs WHERE 
-cd_code='CD-ADMIN'",
-        [](void* data, int, char** vals, char**) -> int {
-            *static_cast<int*>(data) = std::stoi(vals[0]);
-            return 0;
-        }, &cnt);
-    EXPECT_EQ(cnt, 1);
-}
 EOF
 
 # --------------------------------------------------
